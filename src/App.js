@@ -1,19 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { collection, onSnapshot, doc, setDoc, query, orderBy } from 'firebase/firestore';
-import { initializeApp } from ’firebase/app‘;
-import { getFirestore } from ’firebase/firestore‘;
+import { db } from './firebase';
 
-const firebaseConfig = {
-  apiKey: ”AIzaSyC6sXVbXptqmcT49Qp_-n1ub49WErw1xic“,
-  authDomain: ”valorant-boost-c70fa.firebaseapp.com“,
-  projectId: ”valorant-boost-c70fa“,
-  storageBucket: ”valorant-boost-c70fa.firebasestorage.app“,
-  messagingSenderId: ”922997246530“,
-  appId: ”1:922997246530:web:6defaa6f823c8208383bdb“
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
 const RANKS = ["鐵牌","銅牌","銀牌","金牌","白金","鑽石","超凡入聖","神話","賦能"];
 const RANK_TIERS = ["1","2","3"];
 const SERVICES = [
