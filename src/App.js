@@ -142,13 +142,7 @@ function OrderCard({ order, onClaim, onDone, onCancel, onDelete, agentName, isBo
     )}
   </>
 )}
-  <>
-    {(order.status==="pending"||order.status==="active") && (
-      <>
-        {order.status==="active" && <Btn onClick={()=>onDone(order.id)} color="#69f0ae" small>✅ 標記完成</Btn>}
-        <Btn onClick={()=>onCancel(order.id)} color="#ef5350" small outline>取消訂單</Btn>
-      </>
-    )}
+ 
     {order.status==="done" && (
       <Btn onClick={()=>onDelete(order.id)} color="#ef5350" small outline>🗑️ 刪除</Btn>
     )}
@@ -317,11 +311,12 @@ function LoginScreen({ onEnterAgent, onEnterBoss }) {
     <div style={{background:C.secondary,minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24,fontFamily:"'Noto Sans TC',sans-serif"}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;800&display=swap'); *{box-sizing:border-box;} @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
       <div style={{marginBottom:6,display:"flex",alignItems:"center",gap:8,userSelect:"none",cursor:"default"}} onClick={handleTitleClick}>
-        <div style={{width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)",marginBottom:16}}>
+        <div style={{width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)",marginBottom:0}}>
   <img src="https://raw.githubusercontent.com/Lakers1010/valorant-boost/main/public/663373622_1670831787406626_3063837288362313925_n.jpg" style={{width:"100%",height:"auto",objectFit:"cover",display:"block"}} />
 </div>
-<span style={{fontWeight:800,fontSize:28,color:"#f5a623",marginBottom:4,display:"block",textAlign:"center"}}>EZ遊戲代打</span>
-      </div>
+<div style={{textAlign:"center",padding:"12px 0 20px 0"}}>
+  <span style={{fontWeight:800,fontSize:28,color:"#f5a623"}}>EZ遊戲代打</span>
+</div>
       <p style={{color:C.muted,fontSize:13,marginBottom:44}}>接單管理系統</p>
       <div style={{width:"100%",maxWidth:340}}>
         {!showBoss ? (
