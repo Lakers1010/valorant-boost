@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { collection, onSnapshot, doc, setDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { db } from './firebase';
 
-const RANKS = ["鐵牌","銅牌","銀牌","金牌","白金","鑽石","超凡入聖","不朽","輝煌"];
+const RANKS = ["鐵牌","銅牌","銀牌","金牌","白金","鑽石","超凡入聖","神話","賦能"];
 const RANK_TIERS = ["1","2","3"];
 const SERVICES = [
   { id:"boost", label:"段位代打", base:500 },
