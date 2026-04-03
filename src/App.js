@@ -197,7 +197,7 @@ function SnapView({ orders }) {
   const [copied, setCopied] = useState(false);
   const pending = orders.filter(o=>o.status==="pending");
   const lines = pending.length === 0 ? ["目前沒有待接訂單"] : [
-    `🎮 VALORANT 代打接單板`, `${"─".repeat(28)}`,
+    `🎮 VALORANT 接單板`, `${"─".repeat(28)}`,
     ...pending.flatMap(o => [
       ``,`📋 #${o.id}${o.urgent?" 🔥加急":""}`,
       `服務 ▸ ${SERVICES.find(s=>s.id===o.service)?.label}`,
@@ -290,8 +290,8 @@ function LoginScreen({ onEnterAgent, onEnterBoss }) {
     <div style={{background:C.secondary,minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24,fontFamily:"'Noto Sans TC',sans-serif"}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;800&display=swap'); *{box-sizing:border-box;} @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
       <div style={{marginBottom:6,display:"flex",alignItems:"center",gap:8,userSelect:"none",cursor:"default"}} onClick={handleTitleClick}>
-        <div style={{width:10,height:10,borderRadius:"50%",background:C.primary,boxShadow:`0 0 12px ${C.primary}`}} />
-        <span style={{fontWeight:800,fontSize:22,color:C.text}}>VALORANT 代打</span>
+        <img src="https://raw.githubusercontent.com/Lakers1010/valorant-boost/main/public/663373622_1670831787406626_3063837288362313925_n.jpg" style={{width:60,height:60,borderRadius:10,objectFit:"cover",marginBottom:8}} />
+<span style={{fontWeight:800,fontSize:22,color:C.text}}>EZ遊戲代打</span>
       </div>
       <p style={{color:C.muted,fontSize:13,marginBottom:44}}>接單管理系統</p>
       <div style={{width:"100%",maxWidth:340}}>
