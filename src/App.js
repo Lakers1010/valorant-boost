@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { collection, onSnapshot, doc, setDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { db } from './firebase';
 
-const RANKS = ["鐵牌","銅牌","銀牌","金牌","白金","鑽石","超凡入聖","神話","賦能"];
+const RANKS = ["鐵牌","銅牌","銀牌","金牌","白金","鑽石","超凡入聖","不朽","輝煌"];
 const RANK_TIERS = ["1","2","3"];
 const SERVICES = [
   { id:"boost", label:"段位代打", base:500 },
@@ -22,6 +22,7 @@ const C = {
   text:"#ece8e1", muted:"#7f9ab5"
 };
 const BOSS_PASSWORD = "boss1234";
+const LOGO_URL = "https://raw.githubusercontent.com/Lakers1010/valorant-boost/main/public/663373622_1670831787406626_3063837288362313925_n.jpg";
 
 const uid = () => Math.random().toString(36).slice(2,9).toUpperCase();
 const fmt = iso => iso ? new Date(iso).toLocaleString("zh-TW",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}) : "";
@@ -50,7 +51,8 @@ function useOrders() {
   }, []);
   const saveOrder = async (order) => { await setDoc(doc(db, "orders", order.id), order); };
   const updateOrder = async (id, patch) => { await setDoc(doc(db, "orders", id), patch, { merge: true }); };
-  return { orders, loading, saveOrder, updateOrder };
+  const removeOrder = async (id) => { await deleteDoc(doc(db, "orders", id)); };
+  return { orders, loading, saveOrder, updateOrder, removeOrder };
 }
 function Toast({ msg, onDone }) {
   useEffect(() => { const t = setTimeout(onDone, 2400); return () => clearTimeout(t); }, []);
@@ -94,25 +96,7 @@ function Sel({ label, value, onChange, options, style={} }) {
   );
 }
 
-
-}
-function NewOrderForm({ onSubmit, onClose }) {
-  const [form, setForm] = useState({clientName:"",gameId:"",service:"boost",fromRank:"鐵牌",fromTier:"1",toRank:"銀牌",toTier:"1",wins:"5",note:"",urgent:false,price:""});
-  const set = (k,v) => setForm(f=>({...f,[k]:v}));
-  const svc = SERVICES.find(s=>s.id===form.service);
-  const handleSubmit = () => {
-    if (!form.clientName.trim()) { alert("請輸入客戶名稱"); return; }
-    if (!form.price || isNaN(form.price)) { alert("請輸入有效價格"); return; }
-    const id = uid();
-    onSubmit({
-      id, ...form, price: Number(form.price),
-      fromRank: form.service==="boost" ? `${form.fromRank} ${form.fromTier}` : null,
-      toRank:   form.service==="boost" ? `${form.toRank} ${form.toTier}` : null,
-      wins:     form.service==="win"   ? form.wins : null,
-      status:"pending", claimedBy:null,
-      createdAt: new Date().toISOString(),
-    });
-    function OrderCard({ order, onClaim, onDone, onCancel, onDelete, agentName, isBoss }) {
+function OrderCard({ order, onClaim, onDone, onCancel, onDelete, agentName, isBoss }) {
   const sm = STATUS_META[order.status];
   return (
     <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 18px",marginBottom:10,position:"relative",overflow:"hidden"}}>
@@ -146,25 +130,37 @@ function NewOrderForm({ onSubmit, onClose }) {
         {agentName && order.status==="active" && order.claimedBy===agentName && <Btn onClick={()=>onDone(order.id)} color="#69f0ae" small>✅ 完成</Btn>}
         {isBoss && (
           <>
-            {order.status==="pending" && (
-              <Btn onClick={()=>onCancel(order.id)} color="#ef5350" small outline>取消訂單</Btn>
-            )}
+            {order.status==="pending" && <Btn onClick={()=>onCancel(order.id)} color="#ef5350" small outline>取消訂單</Btn>}
             {order.status==="active" && (
               <>
                 <Btn onClick={()=>onDone(order.id)} color="#69f0ae" small>✅ 標記完成</Btn>
                 <Btn onClick={()=>onCancel(order.id)} color="#ef5350" small outline>取消訂單</Btn>
               </>
             )}
-            {(order.status==="done"||order.status==="cancelled") && (
-              <Btn onClick={()=>onDelete(order.id)} color="#ef5350" small outline>🗑️ 刪除</Btn>
-            )}
+            {(order.status==="done"||order.status==="cancelled") && <Btn onClick={()=>onDelete(order.id)} color="#ef5350" small outline>🗑️ 刪除</Btn>}
           </>
         )}
       </div>
     </div>
   );
 }
-  
+         function NewOrderForm({ onSubmit, onClose }) {
+  const [form, setForm] = useState({clientName:"",gameId:"",service:"boost",fromRank:"鐵牌",fromTier:"1",toRank:"銀牌",toTier:"1",wins:"5",note:"",urgent:false,price:""});
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+  const svc = SERVICES.find(s=>s.id===form.service);
+  const handleSubmit = () => {
+    if (!form.clientName.trim()) { alert("請輸入客戶名稱"); return; }
+    if (!form.price || isNaN(form.price)) { alert("請輸入有效價格"); return; }
+    const id = uid();
+    onSubmit({
+      id, ...form, price: Number(form.price),
+      fromRank: form.service==="boost" ? `${form.fromRank} ${form.fromTier}` : null,
+      toRank:   form.service==="boost" ? `${form.toRank} ${form.toTier}` : null,
+      wins:     form.service==="win"   ? form.wins : null,
+      status:"pending", claimedBy:null,
+      createdAt: new Date().toISOString(),
+    });
+  };
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:16}}>
       <div style={{background:C.secondary,border:`1px solid ${C.border}`,borderRadius:16,padding:28,width:"100%",maxWidth:520,maxHeight:"90vh",overflowY:"auto"}}>
@@ -209,7 +205,7 @@ function SnapView({ orders }) {
   const [copied, setCopied] = useState(false);
   const pending = orders.filter(o=>o.status==="pending");
   const lines = pending.length === 0 ? ["目前沒有待接訂單"] : [
-    `🎮 VALORANT 接單板`, `${"─".repeat(28)}`,
+    `🎮 EZ遊戲代打 接單板`, `${"─".repeat(28)}`,
     ...pending.flatMap(o => [
       ``,`📋 #${o.id}${o.urgent?" 🔥加急":""}`,
       `服務 ▸ ${SERVICES.find(s=>s.id===o.service)?.label}`,
@@ -299,17 +295,19 @@ function LoginScreen({ onEnterAgent, onEnterBoss }) {
   };
 
   return (
-    <div style={{background:C.secondary,minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24,fontFamily:"'Noto Sans TC',sans-serif"}}>
+    <div style={{background:C.secondary,minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-start",fontFamily:"'Noto Sans TC',sans-serif",overflowX:"hidden"}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;800&display=swap'); *{box-sizing:border-box;} @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
-      <div style={{marginBottom:6,display:"flex",alignItems:"center",gap:8,userSelect:"none",cursor:"default"}} onClick={handleTitleClick}>
-        <div style={{width:"100vw",position:"relative",left:"50%",transform:"translateX(-50%)",marginBottom:0}}>
-  <img src="https://raw.githubusercontent.com/Lakers1010/valorant-boost/main/public/663373622_1670831787406626_3063837288362313925_n.jpg" style={{width:"100%",height:"auto",objectFit:"cover",display:"block"}} />
-</div>
-<div style={{textAlign:"center",padding:"12px 0 20px 0"}}>
-  <span style={{fontWeight:800,fontSize:28,color:"#f5a623"}}>EZ遊戲代打</span>
-</div>
-      <p style={{color:C.muted,fontSize:13,marginBottom:44}}>接單管理系統</p>
-      <div style={{width:"100%",maxWidth:340}}>
+
+      <div style={{width:"100%"}} onClick={handleTitleClick}>
+        <img src={LOGO_URL} style={{width:"100%",height:"auto",display:"block",objectFit:"cover"}} />
+      </div>
+
+      <div style={{textAlign:"center",padding:"16px 0 8px 0"}}>
+        <span style={{fontWeight:800,fontSize:28,color:"#f5a623"}}>EZ遊戲代打</span>
+      </div>
+      <p style={{color:C.muted,fontSize:13,marginBottom:28,marginTop:0}}>接單管理系統</p>
+
+      <div style={{width:"100%",maxWidth:340,padding:"0 20px"}}>
         {!showBoss ? (
           <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:16,padding:28}}>
             <div style={{textAlign:"center",marginBottom:20}}>
@@ -349,8 +347,9 @@ function LoginScreen({ onEnterAgent, onEnterBoss }) {
     </div>
   );
 }
+
 export default function App() {
-  const { orders, loading, saveOrder, updateOrder } = useOrders();
+  const { orders, loading, saveOrder, updateOrder, removeOrder } = useOrders();
   const [tab, setTab] = useState("orders");
   const [filter, setFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
@@ -379,10 +378,10 @@ export default function App() {
     showToast("訂單已取消");
   };
   const deleteOrder = async (id) => {
-  if (!window.confirm("確認刪除此訂單？刪除後無法復原")) return;
-  await deleteDoc(doc(db, "orders", id));
-  showToast("🗑️ 訂單已刪除");
-};
+    if (!window.confirm("確認刪除此訂單？刪除後無法復原")) return;
+    await removeOrder(id);
+    showToast("🗑️ 訂單已刪除");
+  };
 
   const BOSS_TABS = [{id:"orders",label:"📋 訂單"},{id:"snap",label:"📸 拍單"},{id:"stats",label:"📊 統計"}];
   const AGENT_TABS = [{id:"orders",label:"📋 接單"},{id:"snap",label:"📸 拍單"}];
@@ -407,15 +406,15 @@ export default function App() {
       `}</style>
 
       <div style={{background:C.surface,borderBottom:`1px solid ${C.border}`,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",position:"sticky",top:0,zIndex:50}}>
-        <div>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <div style={{width:8,height:8,borderRadius:"50%",background:C.primary,boxShadow:`0 0 8px ${C.primary}`}} />
-            <span style={{fontWeight:800,fontSize:15}}>VALORANT 代打管理</span>
-          </div>
-          <div style={{fontSize:11,marginTop:2}}>
-            {isBoss
-              ? <span style={{color:C.muted}}>{orders.filter(o=>o.status==="pending").length} 待接 · {orders.filter(o=>o.status==="active").length} 進行中</span>
-              : <span style={{color:"#4fc3f7"}}>⚡ {agentName} 的接單介面</span>}
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <img src={LOGO_URL} style={{width:40,height:28,objectFit:"contain",borderRadius:4}} />
+          <div>
+            <div style={{fontWeight:800,fontSize:15,color:"#f5a623"}}>EZ遊戲代打</div>
+            <div style={{fontSize:11,marginTop:1}}>
+              {isBoss
+                ? <span style={{color:C.muted}}>{orders.filter(o=>o.status==="pending").length} 待接 · {orders.filter(o=>o.status==="active").length} 進行中</span>
+                : <span style={{color:"#4fc3f7"}}>⚡ {agentName} 的接單介面</span>}
+            </div>
           </div>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
@@ -461,7 +460,7 @@ export default function App() {
                 ? <div style={{textAlign:"center",padding:"60px 0",color:C.muted}}>{agentName?"目前沒有可接的訂單":"沒有訂單"}</div>
                 : filtered.map(o=>(
                     <OrderCard key={o.id} order={o}
-                     onClaim={claimOrder} onDone={doneOrder} onCancel={cancelOrder} onDelete={deleteOrder}
+                      onClaim={claimOrder} onDone={doneOrder} onCancel={cancelOrder} onDelete={deleteOrder}
                       agentName={agentName} isBoss={isBoss}
                     />
                   ))
