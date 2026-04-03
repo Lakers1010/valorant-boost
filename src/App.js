@@ -290,8 +290,8 @@ function LoginScreen({ onEnterAgent, onEnterBoss }) {
     <div style={{background:C.secondary,minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24,fontFamily:"'Noto Sans TC',sans-serif"}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;800&display=swap'); *{box-sizing:border-box;} @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
       <div style={{marginBottom:6,display:"flex",alignItems:"center",gap:8,userSelect:"none",cursor:"default"}} onClick={handleTitleClick}>
-        <img src="https://raw.githubusercontent.com/Lakers1010/valorant-boost/main/public/663373622_1670831787406626_3063837288362313925_n.jpg" style={{width:60,height:60,borderRadius:10,objectFit:"cover",marginBottom:8}} />
-<span style={{fontWeight:800,fontSize:22,color:C.text}}>EZ遊戲代打</span>
+        <img src="https://raw.githubusercontent.com/Lakers1010/valorant-boost/main/public/663373622_1670831787406626_3063837288362313925_n.jpg" style={{width:200,height:140,borderRadius:10,objectFit:"contain",marginBottom:8}} />
+<span style={{fontWeight:800,fontSize:22,color:"#f5a623"}}>EZ遊戲代打</span>
       </div>
       <p style={{color:C.muted,fontSize:13,marginBottom:44}}>接單管理系統</p>
       <div style={{width:"100%",maxWidth:340}}>
