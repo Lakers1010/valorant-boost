@@ -143,15 +143,7 @@ function OrderCard({ order, onClaim, onDone, onCancel, onDelete, agentName, isBo
   </>
 )}
  
-    {order.status==="done" && (
-      <Btn onClick={()=>onDelete(order.id)} color="#ef5350" small outline>🗑️ 刪除</Btn>
-    )}
-  </>
-)} && (
-          <>
-            {order.status==="active" && <Btn onClick={()=>onDone(order.id)} color="#69f0ae" small>✅ 標記完成</Btn>}
-            <Btn onClick={()=>onCancel(order.id)} color="#ef5350" small outline>取消訂單</Btn>
-          </>
+  
         )}
       </div>
     </div>
