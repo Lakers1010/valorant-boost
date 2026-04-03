@@ -94,7 +94,25 @@ function Sel({ label, value, onChange, options, style={} }) {
   );
 }
 
-function OrderCard({ order, onClaim, onDone, onCancel, onDelete, agentName, isBoss }) {
+
+}
+function NewOrderForm({ onSubmit, onClose }) {
+  const [form, setForm] = useState({clientName:"",gameId:"",service:"boost",fromRank:"鐵牌",fromTier:"1",toRank:"銀牌",toTier:"1",wins:"5",note:"",urgent:false,price:""});
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+  const svc = SERVICES.find(s=>s.id===form.service);
+  const handleSubmit = () => {
+    if (!form.clientName.trim()) { alert("請輸入客戶名稱"); return; }
+    if (!form.price || isNaN(form.price)) { alert("請輸入有效價格"); return; }
+    const id = uid();
+    onSubmit({
+      id, ...form, price: Number(form.price),
+      fromRank: form.service==="boost" ? `${form.fromRank} ${form.fromTier}` : null,
+      toRank:   form.service==="boost" ? `${form.toRank} ${form.toTier}` : null,
+      wins:     form.service==="win"   ? form.wins : null,
+      status:"pending", claimedBy:null,
+      createdAt: new Date().toISOString(),
+    });
+    function OrderCard({ order, onClaim, onDone, onCancel, onDelete, agentName, isBoss }) {
   const sm = STATUS_META[order.status];
   return (
     <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 18px",marginBottom:10,position:"relative",overflow:"hidden"}}>
@@ -127,45 +145,26 @@ function OrderCard({ order, onClaim, onDone, onCancel, onDelete, agentName, isBo
         {agentName && order.status==="pending" && <Btn onClick={()=>onClaim(order.id)} color="#4fc3f7" small>⚡ 接單</Btn>}
         {agentName && order.status==="active" && order.claimedBy===agentName && <Btn onClick={()=>onDone(order.id)} color="#69f0ae" small>✅ 完成</Btn>}
         {isBoss && (
-  <>
-    {order.status==="pending" && (
-      <Btn onClick={()=>onCancel(order.id)} color="#ef5350" small outline>取消訂單</Btn>
-    )}
-    {order.status==="active" && (
-      <>
-        <Btn onClick={()=>onDone(order.id)} color="#69f0ae" small>✅ 標記完成</Btn>
-        <Btn onClick={()=>onCancel(order.id)} color="#ef5350" small outline>取消訂單</Btn>
-      </>
-    )}
-    {(order.status==="done"||order.status==="cancelled") && (
-      <Btn onClick={()=>onDelete(order.id)} color="#ef5350" small outline>🗑️ 刪除</Btn>
-    )}
-  </>
-)}
- 
-  
+          <>
+            {order.status==="pending" && (
+              <Btn onClick={()=>onCancel(order.id)} color="#ef5350" small outline>取消訂單</Btn>
+            )}
+            {order.status==="active" && (
+              <>
+                <Btn onClick={()=>onDone(order.id)} color="#69f0ae" small>✅ 標記完成</Btn>
+                <Btn onClick={()=>onCancel(order.id)} color="#ef5350" small outline>取消訂單</Btn>
+              </>
+            )}
+            {(order.status==="done"||order.status==="cancelled") && (
+              <Btn onClick={()=>onDelete(order.id)} color="#ef5350" small outline>🗑️ 刪除</Btn>
+            )}
+          </>
         )}
       </div>
     </div>
   );
 }
-function NewOrderForm({ onSubmit, onClose }) {
-  const [form, setForm] = useState({clientName:"",gameId:"",service:"boost",fromRank:"鐵牌",fromTier:"1",toRank:"銀牌",toTier:"1",wins:"5",note:"",urgent:false,price:""});
-  const set = (k,v) => setForm(f=>({...f,[k]:v}));
-  const svc = SERVICES.find(s=>s.id===form.service);
-  const handleSubmit = () => {
-    if (!form.clientName.trim()) { alert("請輸入客戶名稱"); return; }
-    if (!form.price || isNaN(form.price)) { alert("請輸入有效價格"); return; }
-    const id = uid();
-    onSubmit({
-      id, ...form, price: Number(form.price),
-      fromRank: form.service==="boost" ? `${form.fromRank} ${form.fromTier}` : null,
-      toRank:   form.service==="boost" ? `${form.toRank} ${form.toTier}` : null,
-      wins:     form.service==="win"   ? form.wins : null,
-      status:"pending", claimedBy:null,
-      createdAt: new Date().toISOString(),
-    });
-  };
+  
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:16}}>
       <div style={{background:C.secondary,border:`1px solid ${C.border}`,borderRadius:16,padding:28,width:"100%",maxWidth:520,maxHeight:"90vh",overflowY:"auto"}}>
