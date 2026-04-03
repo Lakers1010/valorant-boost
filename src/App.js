@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { collection, onSnapshot, doc, setDoc, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { db } from './firebase';
 
 const RANKS = ["鐵牌","銅牌","銀牌","金牌","白金","鑽石","超凡入聖","神話","賦能"];
@@ -94,7 +94,7 @@ function Sel({ label, value, onChange, options, style={} }) {
   );
 }
 
-function OrderCard({ order, onClaim, onDone, onCancel, agentName, isBoss }) {
+function OrderCard({ order, onClaim, onDone, onCancel, onDelete, agentName, isBoss }) {
   const sm = STATUS_META[order.status];
   return (
     <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 18px",marginBottom:10,position:"relative",overflow:"hidden"}}>
@@ -126,7 +126,19 @@ function OrderCard({ order, onClaim, onDone, onCancel, agentName, isBoss }) {
       <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
         {agentName && order.status==="pending" && <Btn onClick={()=>onClaim(order.id)} color="#4fc3f7" small>⚡ 接單</Btn>}
         {agentName && order.status==="active" && order.claimedBy===agentName && <Btn onClick={()=>onDone(order.id)} color="#69f0ae" small>✅ 完成</Btn>}
-        {isBoss && (order.status==="pending"||order.status==="active") && (
+        {isBoss && (
+  <>
+    {(order.status==="pending"||order.status==="active") && (
+      <>
+        {order.status==="active" && <Btn onClick={()=>onDone(order.id)} color="#69f0ae" small>✅ 標記完成</Btn>}
+        <Btn onClick={()=>onCancel(order.id)} color="#ef5350" small outline>取消訂單</Btn>
+      </>
+    )}
+    {order.status==="done" && (
+      <Btn onClick={()=>onDelete(order.id)} color="#ef5350" small outline>🗑️ 刪除</Btn>
+    )}
+  </>
+)} && (
           <>
             {order.status==="active" && <Btn onClick={()=>onDone(order.id)} color="#69f0ae" small>✅ 標記完成</Btn>}
             <Btn onClick={()=>onCancel(order.id)} color="#ef5350" small outline>取消訂單</Btn>
@@ -290,8 +302,10 @@ function LoginScreen({ onEnterAgent, onEnterBoss }) {
     <div style={{background:C.secondary,minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24,fontFamily:"'Noto Sans TC',sans-serif"}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;800&display=swap'); *{box-sizing:border-box;} @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
       <div style={{marginBottom:6,display:"flex",alignItems:"center",gap:8,userSelect:"none",cursor:"default"}} onClick={handleTitleClick}>
-        <img src="https://raw.githubusercontent.com/Lakers1010/valorant-boost/main/public/663373622_1670831787406626_3063837288362313925_n.jpg" style={{width:200,height:140,borderRadius:10,objectFit:"contain",marginBottom:8}} />
-<span style={{fontWeight:800,fontSize:22,color:"#f5a623"}}>EZ遊戲代打</span>
+        <div style={{width:"100%",maxWidth:340,marginBottom:20}}>
+  <img src="https://raw.githubusercontent.com/Lakers1010/valorant-boost/main/public/663373622_1670831787406626_3063837288362313925_n.jpg" style={{width:"100%",height:"auto",borderRadius:12,objectFit:"contain",display:"block"}} />
+</div>
+<span style={{fontWeight:800,fontSize:24,color:"#f5a623",marginBottom:8,display:"block"}}>EZ遊戲代打</span>
       </div>
       <p style={{color:C.muted,fontSize:13,marginBottom:44}}>接單管理系統</p>
       <div style={{width:"100%",maxWidth:340}}>
@@ -363,6 +377,11 @@ export default function App() {
     await updateOrder(id, { status:"cancelled" });
     showToast("訂單已取消");
   };
+  const deleteOrder = async (id) => {
+  if (!window.confirm("確認刪除此訂單？刪除後無法復原")) return;
+  await deleteDoc(doc(db, "orders", id));
+  showToast("🗑️ 訂單已刪除");
+};
 
   const BOSS_TABS = [{id:"orders",label:"📋 訂單"},{id:"snap",label:"📸 拍單"},{id:"stats",label:"📊 統計"}];
   const AGENT_TABS = [{id:"orders",label:"📋 接單"},{id:"snap",label:"📸 拍單"}];
@@ -441,7 +460,7 @@ export default function App() {
                 ? <div style={{textAlign:"center",padding:"60px 0",color:C.muted}}>{agentName?"目前沒有可接的訂單":"沒有訂單"}</div>
                 : filtered.map(o=>(
                     <OrderCard key={o.id} order={o}
-                      onClaim={claimOrder} onDone={doneOrder} onCancel={cancelOrder}
+                     onClaim={claimOrder} onDone={doneOrder} onCancel={cancelOrder} onDelete={deleteOrder}
                       agentName={agentName} isBoss={isBoss}
                     />
                   ))
